@@ -2,7 +2,7 @@
 
 A free, public, Hebrew-first dashboard showing every Israeli local authority's real waste and recycling numbers, tracked against the national 2030 targets (20% landfilling / 54% recycling).
 
-**Live site:** https://adina-p.github.io/waste-dashboard/
+**Live site:** https://adina-paley.github.io/waste-dashboard/
 
 ## What's here
 
@@ -10,11 +10,11 @@ A free, public, Hebrew-first dashboard showing every Israeli local authority's r
 - Per-authority trend pages vs. national average and the 2030 target
 - National overview: recycling vs. landfilling over time, material composition (paper/plastic/organic/etc.), gap to target
 - "Wall of silence": authorities that don't report data
-- [Methodology](https://adina-p.github.io/waste-dashboard/methodology.html): every source, every calculation, every known data limitation, stated plainly
+- [Methodology](https://adina-paley.github.io/waste-dashboard/methodology.html): every source, every calculation, every known data limitation, stated plainly
 
 ## Data sources
 
-Central Bureau of Statistics (CBS), data.gov.il, and the Knesset Research Center. Full citations on the [methodology page](https://adina-p.github.io/waste-dashboard/methodology.html) and in [`data/SOURCES.md`](data/SOURCES.md).
+Central Bureau of Statistics (CBS), data.gov.il, and the Knesset Research Center. Full citations on the [methodology page](https://adina-paley.github.io/waste-dashboard/methodology.html) and in [`data/SOURCES.md`](data/SOURCES.md).
 
 ## Repo structure
 

@@ -11,7 +11,7 @@ import shutil
 
 DATA_PATH = "site/data/waste.json"
 OUT_DIR = "site"
-BASE_URL = "https://adina-p.github.io/waste-dashboard/"
+BASE_URL = "https://adina-paley.github.io/waste-dashboard/"
 LAST_YEAR_FALLBACK_DEPTH = 3  # how many years back to look for a reported value
 
 def _compute_asset_version() -> str:
@@ -344,7 +344,7 @@ def shell(
   <div class="wrap">
     <p>{s["footer_source"]} · <a href="{root_prefix}methodology.html">{s["footer_methodology"]}</a></p>
     <p>{s["footer_disclaimer"]}</p>
-    <p>{s["footer_credit"]} Adina · <a href="https://www.linkedin.com/in/adina-paley-b54b911b9/" target="_blank" rel="noopener">LinkedIn</a> · <a href="https://github.com/Adina-P" target="_blank" rel="noopener">GitHub</a></p>
+    <p>{s["footer_credit"]} Adina · <a href="https://www.linkedin.com/in/adina-paley-b54b911b9/" target="_blank" rel="noopener">LinkedIn</a> · <a href="https://github.com/adina-paley" target="_blank" rel="noopener">GitHub</a></p>
   </div>
 </footer>
 <script src="{root_prefix}theme.js?v={ASSET_VERSION}"></script>

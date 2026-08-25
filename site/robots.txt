@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://adina-p.github.io/waste-dashboard/sitemap.xml
+Sitemap: https://adina-paley.github.io/waste-dashboard/sitemap.xml
