@@ -1,8 +1,13 @@
 # מדד הפסולת — Israel Municipal Waste Dashboard
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Live site](https://img.shields.io/badge/Live%20site-adina--paley.github.io-2a78d6)](https://adina-paley.github.io/waste-dashboard/)
+
 A free, public, Hebrew-first dashboard showing every Israeli local authority's real waste and recycling numbers, tracked against the national 2030 targets (20% landfilling / 54% recycling).
 
 **Live site:** https://adina-paley.github.io/waste-dashboard/
+
+![Screenshot of the Israel Waste Index home page](docs/screenshot.png)
 
 ## What's here
 
@@ -40,3 +45,7 @@ No database, no build chain, no framework — the whole site is static files, de
 ## Status
 
 v1, actively maintained. Data is not yet auto-updating; re-run the pipeline when CBS publishes new figures. Known gaps (district, socioeconomic cluster, a few unmatched authorities) are documented in the methodology page rather than hidden.
+
+## License
+
+Code is [MIT licensed](LICENSE) — fork it, adapt it for another city or country, whatever's useful. The underlying data is not covered by this license: it belongs to the Central Bureau of Statistics and data.gov.il and carries their own usage terms (see [`data/SOURCES.md`](data/SOURCES.md)).
