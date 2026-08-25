@@ -11,6 +11,7 @@ import shutil
 
 DATA_PATH = "site/data/waste.json"
 OUT_DIR = "site"
+BASE_URL = "https://adina-p.github.io/waste-dashboard/"
 LAST_YEAR_FALLBACK_DEPTH = 3  # how many years back to look for a reported value
 
 def _compute_asset_version() -> str:
@@ -268,6 +269,12 @@ ICON_TONS = '<svg class="icon-sm" width="20" height="20" viewBox="0 0 24 24" fil
 ICON_SILENCE_SM = '<svg class="icon-sm" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M2 2l20 20" opacity="0.6"/></svg>'
 
 
+DEFAULT_DESCRIPTION = {
+    "he": 'מדד הפסולת: נתוני פסולת ומיחזור לכל 258 הרשויות המקומיות בישראל, כולל דירוג, תמונת מצב ארצית, והשוואה ליעדי 2030 של הממשלה. כל מספר מקושר למקור הרשמי שלו.',
+    "en": "Israel Waste Index: waste and recycling data for all 258 Israeli local authorities, with rankings, a national overview, and comparison to the government's 2030 targets. Every number links to its official source.",
+}
+
+
 def shell(
     title: str,
     active: str,
@@ -277,6 +284,8 @@ def shell(
     lang: str = "he",
     nav_prefix: str | None = None,
     lang_toggle_href: str | None = None,
+    description: str | None = None,
+    canonical_path: str = "index.html",
 ) -> str:
     s = STRINGS[lang]
     nav_items = NAV_ITEMS_EN if lang == "en" else NAV_ITEMS_HE
@@ -290,12 +299,28 @@ def shell(
         f'<a href="{lang_toggle_href}" class="lang-toggle">{s["lang_toggle"]}</a>' if lang_toggle_href else ""
     )
     dir_attr = "rtl" if lang == "he" else "ltr"
+    desc = description or DEFAULT_DESCRIPTION[lang]
+    canonical_url = BASE_URL + canonical_path
+    og_image_url = BASE_URL + "images/hero.jpg"
+    og_locale = "he_IL" if lang == "he" else "en_US"
     return f"""<!doctype html>
 <html lang="{lang}" dir="{dir_attr}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title}</title>
+<meta name="description" content="{desc}">
+<link rel="canonical" href="{canonical_url}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{canonical_url}">
+<meta property="og:image" content="{og_image_url}">
+<meta property="og:locale" content="{og_locale}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{title}">
+<meta name="twitter:description" content="{desc}">
+<meta name="twitter:image" content="{og_image_url}">
 <link rel="stylesheet" href="{root_prefix}style.css?v={ASSET_VERSION}">
 <script>(function(){{try{{var t=localStorage.getItem('theme');if(t)document.documentElement.setAttribute('data-theme',t);}}catch(e){{}}}})();</script>
 {extra_head}
@@ -390,7 +415,8 @@ def build_home_page(data: dict, lang: str = "he") -> str:
 """
     title = "מדד הפסולת — נתוני פסולת ומיחזור לפי רשות מקומית" if lang == "he" else "Israel Waste Index — waste and recycling data by local authority"
     lang_toggle_href = "en/index.html" if lang == "he" else "../index.html"
-    return shell(title, "index.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href)
+    canonical_path = "index.html" if lang == "he" else "en/index.html"
+    return shell(title, "index.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href, canonical_path=canonical_path)
 
 
 def build_ranking_page(data: dict, lang: str = "he") -> str:
@@ -440,8 +466,14 @@ def build_ranking_page(data: dict, lang: str = "he") -> str:
 <script src="{root_prefix}ranking.js?v={ASSET_VERSION}"></script>
 """
     title = "מדד הפסולת — דירוג רשויות מקומיות" if lang == "he" else "Israel Waste Index — Local Authority Rankings"
+    description = (
+        "טבלה מלאה, ניתנת למיון וסינון, של אחוז מיחזור, ק\"ג פסולת לנפש ליום, ומגמה שנתית לכל 258 הרשויות המקומיות בישראל."
+        if lang == "he"
+        else "A full, sortable, filterable table of % recycled, kg of waste per person per day, and year-over-year trend for all 258 Israeli local authorities."
+    )
     lang_toggle_href = "en/ranking.html" if lang == "he" else "../ranking.html"
-    return shell(title, "ranking.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href)
+    canonical_path = "ranking.html" if lang == "he" else "en/ranking.html"
+    return shell(title, "ranking.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href, description=description, canonical_path=canonical_path)
 
 
 def build_authority_page(authority: dict, years: list[str]) -> str:
@@ -492,7 +524,18 @@ def build_authority_page(authority: dict, years: list[str]) -> str:
 <script>window.AUTHORITY_SLUG = {json.dumps(authority['slug'])};</script>
 <script src="../authority.js?v={ASSET_VERSION}"></script>
 """
-    return shell(f"{name_he} — מדד הפסולת", "", body, root_prefix="../")
+    if ly:
+        description = f'נתוני פסולת ומיחזור עבור {name_he}: {fmt_pct(latest.get("pct_recycled"))} מיחזור והשבה, {fmt_num(latest.get("total_waste_tons"))} טונות פסולת ({ly}). מקור: הלשכה המרכזית לסטטיסטיקה.'
+    else:
+        description = f'נתוני פסולת ומיחזור עבור {name_he}. הרשות לא דיווחה נתונים ללמ"ס באף אחת מהשנים הזמינות. מקור: הלשכה המרכזית לסטטיסטיקה.'
+    return shell(
+        f"{name_he} — מדד הפסולת",
+        "",
+        body,
+        root_prefix="../",
+        description=description,
+        canonical_path=f"authority/{authority['slug']}.html",
+    )
 
 
 def build_national_page(data: dict, lang: str = "he") -> str:
@@ -563,8 +606,14 @@ def build_national_page(data: dict, lang: str = "he") -> str:
 <script src="{root_prefix}national.js?v={ASSET_VERSION}"></script>
 """
     title = "תמונת מצב ארצית — מדד הפסולת" if lang == "he" else "National Overview — Israel Waste Index"
+    description = (
+        f"סך פסולת, מיחזור מול הטמנה, ופילוח חומרים ברמה הארצית: {fmt_pct(n['pct_recycled'])} מיחזור, {fmt_pct(n['pct_landfilled'])} הטמנה ({latest_year}), מול יעד 2030 של הממשלה."
+        if lang == "he"
+        else f"National totals, recycling vs. landfilling, and material breakdown: {fmt_pct(n['pct_recycled'])} recycled, {fmt_pct(n['pct_landfilled'])} landfilled ({latest_year}), against the government's 2030 target."
+    )
     lang_toggle_href = "en/national.html" if lang == "he" else "../national.html"
-    return shell(title, "national.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href)
+    canonical_path = "national.html" if lang == "he" else "en/national.html"
+    return shell(title, "national.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href, description=description, canonical_path=canonical_path)
 
 
 def build_wall_of_silence_page(data: dict, lang: str = "he") -> str:
@@ -606,8 +655,14 @@ def build_wall_of_silence_page(data: dict, lang: str = "he") -> str:
 <script>document.addEventListener('DOMContentLoaded', () => makeSortableTable(document.getElementById('wos-table')));</script>
 """
     title = "חומת השתיקה — מדד הפסולת" if lang == "he" else "Wall of Silence — Israel Waste Index"
+    description = (
+        f"{len(non_reporting)} מתוך {len(data['authorities'])} רשויות מקומיות בישראל לא דיווחו נתוני פסולת ומיחזור ללמ\"ס עבור {latest_year}."
+        if lang == "he"
+        else f"{len(non_reporting)} out of {len(data['authorities'])} Israeli local authorities did not report waste and recycling data to the CBS for {latest_year}."
+    )
     lang_toggle_href = "en/wall-of-silence.html" if lang == "he" else "../wall-of-silence.html"
-    return shell(title, "wall-of-silence.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href)
+    canonical_path = "wall-of-silence.html" if lang == "he" else "en/wall-of-silence.html"
+    return shell(title, "wall-of-silence.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href, description=description, canonical_path=canonical_path)
 
 
 def build_glossary_page(data: dict, lang: str = "he") -> str:
@@ -715,8 +770,14 @@ def build_glossary_page(data: dict, lang: str = "he") -> str:
 </ul>
 """
     title = "מילון מונחים — מדד הפסולת" if lang == "he" else "Glossary — Israel Waste Index"
+    description = (
+        "איך פסולת מטופלת בישראל — הפרדה במקור, מיחזור, קומפוסטציה, השבת אנרגיה, הטמנה — מה כל שיטה אומרת לסביבה ולעלות, ואיך זה נראה במדינות אחרות."
+        if lang == "he"
+        else "How waste is treated in Israel — source separation, recycling, composting, energy recovery, landfill — what each method means for the environment and cost, and how it compares internationally."
+    )
     lang_toggle_href = "en/glossary.html" if lang == "he" else "../glossary.html"
-    return shell(title, "glossary.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href)
+    canonical_path = "glossary.html" if lang == "he" else "en/glossary.html"
+    return shell(title, "glossary.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href, description=description, canonical_path=canonical_path)
 
 
 def build_methodology_page(data: dict, lang: str = "he") -> str:
@@ -815,8 +876,35 @@ def build_methodology_page(data: dict, lang: str = "he") -> str:
 <p>עודכן לאחרונה: {generated_at}. הנתונים אינם מתעדכנים אוטומטית &mdash; עדכון עתידי ידרוש הרצה חוזרת של תהליך העיבוד כאשר הלמ"ס מפרסמת נתונים חדשים.</p>
 """
     title = "מתודולוגיה — מדד הפסולת" if lang == "he" else "Methodology — Israel Waste Index"
+    description = (
+        "מקורות הנתונים, אופן חישוב כל מספר, שיעור הדיווח של הרשויות, והמגבלות הידועות של מדד הפסולת."
+        if lang == "he"
+        else "Data sources, how each number is calculated, the authority reporting rate, and known limitations of the Israel Waste Index."
+    )
     lang_toggle_href = "en/methodology.html" if lang == "he" else "../methodology.html"
-    return shell(title, "methodology.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href)
+    canonical_path = "methodology.html" if lang == "he" else "en/methodology.html"
+    return shell(title, "methodology.html", body, root_prefix=root_prefix, nav_prefix="", lang=lang, lang_toggle_href=lang_toggle_href, description=description, canonical_path=canonical_path)
+
+
+def write_sitemap(paths: list[str], lastmod: str):
+    urls = "\n".join(
+        f"  <url><loc>{BASE_URL}{path}</loc><lastmod>{lastmod}</lastmod></url>" for path in paths
+    )
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls}
+</urlset>
+"""
+    with open(f"{OUT_DIR}/sitemap.xml", "w", encoding="utf-8") as f:
+        f.write(xml)
+
+    robots = f"""User-agent: *
+Allow: /
+
+Sitemap: {BASE_URL}sitemap.xml
+"""
+    with open(f"{OUT_DIR}/robots.txt", "w", encoding="utf-8") as f:
+        f.write(robots)
 
 
 def main():
@@ -825,6 +913,13 @@ def main():
 
     os.makedirs(f"{OUT_DIR}/authority", exist_ok=True)
     os.makedirs(f"{OUT_DIR}/en", exist_ok=True)
+
+    sitemap_paths = [
+        "index.html", "ranking.html", "national.html",
+        "wall-of-silence.html", "glossary.html", "methodology.html",
+        "en/index.html", "en/ranking.html", "en/national.html",
+        "en/wall-of-silence.html", "en/glossary.html", "en/methodology.html",
+    ]
 
     with open(f"{OUT_DIR}/index.html", "w", encoding="utf-8") as f:
         f.write(build_home_page(data))
@@ -856,8 +951,11 @@ def main():
         path = f"{OUT_DIR}/authority/{authority['slug']}.html"
         with open(path, "w", encoding="utf-8") as f:
             f.write(build_authority_page(authority, data["years"]))
+        sitemap_paths.append(f"authority/{authority['slug']}.html")
 
-    print(f"generated index/ranking/national/wall-of-silence/glossary/methodology + en/{{index,ranking,national,wall-of-silence,glossary,methodology}} + {len(data['authorities'])} authority pages")
+    write_sitemap(sitemap_paths, data["generated_at"][:10])
+
+    print(f"generated index/ranking/national/wall-of-silence/glossary/methodology + en/{{index,ranking,national,wall-of-silence,glossary,methodology}} + {len(data['authorities'])} authority pages + sitemap.xml + robots.txt")
 
 
 if __name__ == "__main__":

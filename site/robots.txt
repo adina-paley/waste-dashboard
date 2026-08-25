@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://adina-p.github.io/waste-dashboard/sitemap.xml
