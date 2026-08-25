@@ -308,6 +308,7 @@ def shell(
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="lvJZ1CnCR0-d_bL-8cf6txs5ZS0B42KF1zGocMHkptk" />
 <title>{title}</title>
 <meta name="description" content="{desc}">
 <link rel="canonical" href="{canonical_url}">
